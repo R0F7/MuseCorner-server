@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 5000
@@ -41,7 +41,56 @@ async function run() {
         await client.connect();
 
         app.get('/blog', async (req, res) => {
-            const result = await blogCollection.find().sort({createdAt: -1}).toArray()
+            const result = await blogCollection.find().sort({ createdAt: -1 }).toArray()
+            res.send(result)
+        })
+
+        app.get('/all-blogs', async (req, res) => {
+            const result = await blogCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.get('/categories', async (req, res) => {
+            const { category } = req.query;
+            const result = await blogCollection.find({ category: category }).toArray()
+            res.send(result)
+        })
+
+        app.get('/search', async (req, res) => {
+            // const dataBase = client.db("MuseCornerDB")
+            // dataBase.collection('blog').createIndex({ title: "text" })
+            const { title } = req.query;
+            console.log(title);
+
+            const result = await blogCollection.find({ $text: { $search: title } }).toArray();
+            console.log(result);
+            res.send([]);
+        });
+
+        // app.get('/search', async (req, res) => {
+        //     try {
+        //         const dataBase = client.db("MuseCornerDB");
+        //         const blogCollection = dataBase.collection('blog');
+        //         await blogCollection.createIndex({ title: "text" });
+        //         const searchQuery = 'Exploring';
+        //         const result = await blogCollection.find({ $text: { $search: searchQuery } }).toArray();
+        //         res.send(result);
+        //     } catch (error) {
+        //         console.error(error);
+        //         res.status(500).send("Internal Server Error");
+        //     }
+        // });
+
+        app.get('/details/:id', async (req, res) => {
+            const id = req.params
+            const query = { _id: new ObjectId(id) }
+            const result = await blogCollection.findOne(query)
+            res.send(result)
+        })
+
+        app.post('/blog', async (req, res) => {
+            const info = req.body;
+            const result = await blogCollection.insertOne(info);
             res.send(result)
         })
 

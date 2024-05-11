@@ -37,6 +37,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const blogCollection = client.db('MuseCornerDB').collection('blog')
+        const commentCollection = client.db('MuseCornerDB').collection('comment')
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
@@ -58,10 +59,10 @@ async function run() {
 
         app.get('/search', async (req, res) => {
             const { title } = req.query;
-            console.log(title);
-            const result = await blogCollection.find({ title: { $regex: title, $options:'i' } }).toArray();
-            console.log(result);
-            res.send(result);
+            // console.log(title)
+            const result = await blogCollection.find({ title: { $regex: title, $options:'i' } }).toArray()
+            console.log(result)
+            res.send(result)
         });
 
         app.get('/details/:id', async (req, res) => {
@@ -74,6 +75,12 @@ async function run() {
         app.post('/blog', async (req, res) => {
             const info = req.body;
             const result = await blogCollection.insertOne(info);
+            res.send(result)
+        })
+
+        app.post('/comments', async (req, res) => {
+            const info = req.body;
+            const result = await commentCollection.insertOne(info);
             res.send(result)
         })
 

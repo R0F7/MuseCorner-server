@@ -60,7 +60,7 @@ async function run() {
         app.get('/search', async (req, res) => {
             const { title } = req.query;
             // console.log(title)
-            const result = await blogCollection.find({ title: { $regex: title, $options:'i' } }).toArray()
+            const result = await blogCollection.find({ title: { $regex: title, $options: 'i' } }).toArray()
             console.log(result)
             res.send(result)
         });
@@ -72,15 +72,23 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/comments/:id', async (req, res) => {
+            const { id } = req.params
+            // console.log(id);
+            const query = { blogId: id }
+            const result = await commentCollection.find(query).toArray()
+            res.send(result)
+        })
+
         app.post('/blog', async (req, res) => {
             const info = req.body;
-            const result = await blogCollection.insertOne(info);
+            const result = await blogCollection.insertOne(info)
             res.send(result)
         })
 
         app.post('/comments', async (req, res) => {
             const info = req.body;
-            const result = await commentCollection.insertOne(info);
+            const result = await commentCollection.insertOne(info)
             res.send(result)
         })
 

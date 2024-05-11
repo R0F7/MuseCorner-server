@@ -57,29 +57,12 @@ async function run() {
         })
 
         app.get('/search', async (req, res) => {
-            // const dataBase = client.db("MuseCornerDB")
-            // dataBase.collection('blog').createIndex({ title: "text" })
             const { title } = req.query;
             console.log(title);
-
-            const result = await blogCollection.find({ $text: { $search: title } }).toArray();
+            const result = await blogCollection.find({ title: { $regex: title, $options:'i' } }).toArray();
             console.log(result);
-            res.send([]);
+            res.send(result);
         });
-
-        // app.get('/search', async (req, res) => {
-        //     try {
-        //         const dataBase = client.db("MuseCornerDB");
-        //         const blogCollection = dataBase.collection('blog');
-        //         await blogCollection.createIndex({ title: "text" });
-        //         const searchQuery = 'Exploring';
-        //         const result = await blogCollection.find({ $text: { $search: searchQuery } }).toArray();
-        //         res.send(result);
-        //     } catch (error) {
-        //         console.error(error);
-        //         res.status(500).send("Internal Server Error");
-        //     }
-        // });
 
         app.get('/details/:id', async (req, res) => {
             const id = req.params

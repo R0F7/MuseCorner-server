@@ -87,6 +87,13 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/wishlist/:email', async (req, res) => {
+            const { email } = req.params
+            // console.log(email);
+            const result = await wishlistCollection.find({ user_email: email }).toArray()
+            res.send(result)
+        })
+
         app.post('/blog', async (req, res) => {
             const info = req.body;
             const result = await blogCollection.insertOne(info)
@@ -123,6 +130,15 @@ async function run() {
             const result = await blogCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
         })
+
+        app.delete('/wishlist-remove', async (req, res) => {
+            const { id } = req.query
+            const { email } = req.query
+            const query = { blogId: id, user_email: email }
+            const result = await wishlistCollection.deleteOne(query)
+            res.send(result)
+        })
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });

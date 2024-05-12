@@ -38,6 +38,8 @@ async function run() {
     try {
         const blogCollection = client.db('MuseCornerDB').collection('blog')
         const commentCollection = client.db('MuseCornerDB').collection('comment')
+        const wishlistCollection = client.db('MuseCornerDB').collection('wishlist')
+
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
@@ -94,6 +96,12 @@ async function run() {
         app.post('/comments', async (req, res) => {
             const info = req.body;
             const result = await commentCollection.insertOne(info)
+            res.send(result)
+        })
+
+        app.post('/wishlist', async (req, res) => {
+            const info = req.body
+            const result = await wishlistCollection.insertOne(info)
             res.send(result)
         })
 

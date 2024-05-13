@@ -40,7 +40,7 @@ const verifyToken = (req, res, next) => {
 
     jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(401).send({ message: "unauthorized access" }) //status code 403 (Forbidden) hobe
+            return res.status(401).send({ message: "unauthorized access" })
         }
         req.user = decoded;
         next();
@@ -75,7 +75,8 @@ async function run() {
 
         app.post('/jwt', async (req, res) => {
             const user = req.body
-            console.log('user for token', user);
+            // console.log('user for token', user);
+
             const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '1h' })
             res
                 .cookie('token', token, cookieOption)
@@ -84,7 +85,7 @@ async function run() {
 
         app.post('/logout', async (req, res) => {
             const user = req.body;
-            console.log('logging out', user);
+            // console.log('logging out', user);
             res.clearCookie('token', { ...cookieOption, maxAge: 0 }).send({ success: true })
         })
 
@@ -114,6 +115,19 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/update', verifyToken, async (req, res) => {
+
+            if (req.user.email !== req.query.email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
+            const { id } = req.query
+            const { email } = req.query
+            const query = { _id: new ObjectId(id), user_email: email }
+            const result = await blogCollection.findOne(query)
+            res.send(result)
+        })
+
         app.get('/comments/:id', async (req, res) => {
             const { id } = req.params
             // console.log(id);
@@ -128,6 +142,8 @@ async function run() {
         })
 
         app.get('/wishlist/:email', verifyToken, async (req, res) => {
+            // console.log( req.user.email , req.params.email);
+
             if (req.user.email !== req.params.email) {
                 return res.status(403).send({ message: 'forbidden access' })
             }

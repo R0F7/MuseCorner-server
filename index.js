@@ -2,9 +2,12 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 
 const app = express();
 const port = process.env.PORT || 5000
+
 
 const corsOptions = {
     origin: [
@@ -15,10 +18,34 @@ const corsOptions = {
     optionSuccessStatus: 200,
 }
 
+//cookieOption 
+const cookieOption = {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    secure: process.env.NODE_ENV === "production" ? true : false,
+}
+
 //middleware
 app.use(cors(corsOptions))
 app.use(express.json())
+app.use(cookieParser())
 
+
+const verifyToken = (req, res, next) => {
+    const token = req?.cookies?.token
+
+    if (!token) {
+        return res.status(401).send({ message: 'not authorized' })
+    }
+
+    jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: "unauthorized access" }) //status code 403 (Forbidden) hobe
+        }
+        req.user = decoded;
+        next();
+    })
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wezoknx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -32,8 +59,6 @@ const client = new MongoClient(uri, {
     }
 });
 
-
-
 async function run() {
     try {
         const blogCollection = client.db('MuseCornerDB').collection('blog')
@@ -46,6 +71,21 @@ async function run() {
         app.get('/blog', async (req, res) => {
             const result = await blogCollection.find().sort({ createdAt: -1 }).toArray()
             res.send(result)
+        })
+
+        app.post('/jwt', async (req, res) => {
+            const user = req.body
+            console.log('user for token', user);
+            const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '1h' })
+            res
+                .cookie('token', token, cookieOption)
+                .send({ success: true })
+        })
+
+        app.post('/logout', async (req, res) => {
+            const user = req.body;
+            console.log('logging out', user);
+            res.clearCookie('token', { ...cookieOption, maxAge: 0 }).send({ success: true })
         })
 
         app.get('/all-blogs', async (req, res) => {
@@ -87,9 +127,12 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/wishlist/:email', async (req, res) => {
+        app.get('/wishlist/:email', verifyToken, async (req, res) => {
+            if (req.user.email !== req.params.email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
             const { email } = req.params
-            // console.log(email);
             const result = await wishlistCollection.find({ user_email: email }).toArray()
             res.send(result)
         })

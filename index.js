@@ -13,6 +13,8 @@ const corsOptions = {
     origin: [
         'http://localhost:5173',
         'http://localhost:5174',
+        'https://blog-website-497d3.web.app',
+        'https://blog-website-497d3.firebaseapp.com',
     ],
     credentials: true,
     optionSuccessStatus: 200,
@@ -66,7 +68,7 @@ async function run() {
         const wishlistCollection = client.db('MuseCornerDB').collection('wishlist')
 
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         app.get('/blog', async (req, res) => {
             const result = await blogCollection.find().sort({ createdAt: -1 }).toArray()
@@ -200,7 +202,7 @@ async function run() {
 
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error

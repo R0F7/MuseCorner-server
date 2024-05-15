@@ -104,7 +104,7 @@ async function run() {
             const { title } = req.query;
             // console.log(title)
             const result = await blogCollection.find({ title: { $regex: title, $options: 'i' } }).toArray()
-            console.log(result)
+            // console.log(result)
             res.send(result)
         });
 
@@ -153,7 +153,7 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/blog', async (req, res) => {
+        app.post('/blog', verifyToken, async (req, res) => {
             const info = req.body;
             const result = await blogCollection.insertOne(info)
             res.send(result)
@@ -171,7 +171,7 @@ async function run() {
             res.send(result)
         })
 
-        app.put('/blog/:id', async (req, res) => {
+        app.put('/blog/:id', verifyToken, async (req, res) => {
             const id = req.params
             const doc = req.body
             const filter = { _id: new ObjectId(id) }

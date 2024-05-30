@@ -15,6 +15,7 @@ const corsOptions = {
         'http://localhost:5174',
         'https://blog-website-497d3.web.app',
         'https://blog-website-497d3.firebaseapp.com',
+        'https://musecorner.netlify.app',
     ],
     credentials: true,
     optionSuccessStatus: 200,
